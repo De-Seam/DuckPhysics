@@ -39,10 +39,10 @@ int main()
     GLuint cubeVAO = CreateCubeVAO();
 
     // Set up the camera matrices
-    glm::mat4 projection = glm::perspective(fm::to_radians(45.0f), static_cast<float>(SCREENWIDTH) / static_cast<float>(SCREENHEIGHT), 0.1f, 100.0f);
-    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f),
+    glm::mat4 projection = glm::perspective(fm::to_radians(70.f), static_cast<float>(SCREENWIDTH) / static_cast<float>(SCREENHEIGHT), 0.1f, 1000.0f);
+    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, -5.f, 0.f),
                                   glm::vec3(0.0f, 0.0f, 0.0f),
-                                  glm::vec3(0.0f, 1.0f, 0.0f));
+                                  glm::vec3(0.0f, 0.f, 1.0f));
 
     // Set the projection and view matrices in the shader
     glUseProgram(shaderProgram);

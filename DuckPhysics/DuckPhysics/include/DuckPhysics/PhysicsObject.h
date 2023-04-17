@@ -1,9 +1,10 @@
 #pragma once
 #include "DuckPhysics/Core.h"
+#include "CollisionShapes/CollisionShape.h"
+
+#include <memory>
 
 DP_NAMESPACE_BEGIN
-
-struct Shape;
 
 class PhysicsObject
 {
@@ -14,7 +15,7 @@ private: //Deleted operators
 public:
 	struct ConstructData
 	{
-		Shape* shape;
+		CollisionShape* shape;
 	};
 
 	PhysicsObject(const ConstructData& constructData);
@@ -22,7 +23,7 @@ public:
 
 
 private:
-	Shape* m_shape = nullptr;
+	std::unique_ptr<CollisionShape> m_shape = nullptr;
 };
 
 DP_NAMESPACE_END

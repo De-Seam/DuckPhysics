@@ -1,12 +1,17 @@
 #include "DuckPhysics/Core.h"
 #include "DuckPhysics/PhysicsWorld.h"
 
-DP_NAMESPACE_BEGIN
-
-PhysicsWorld::PhysicsWorld()
+namespace DP_NAMESPACE
 {
 
+	PhysicsWorld::PhysicsWorld()
+	{
+
+	}
+
+	void PhysicsWorld::Update(float DeltaTime)
+	{
+	
+	}
+
 }
-
-
-DP_NAMESPACE_END
