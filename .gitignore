@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+v17/
+build/
+.vs/
+*.pdb
+*.exp
