@@ -2,7 +2,7 @@
 
 void ExampleDroppingCubes::Initialize()
 {
-	m_physicsWorld.;
+	//m_physicsWorld.;
 
 	ExampleParent::Initialize();
 }
