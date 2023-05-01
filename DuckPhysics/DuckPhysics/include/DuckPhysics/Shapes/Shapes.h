@@ -2,7 +2,8 @@
 #include "DuckPhysics/Core.h"
 #include "fm/fmath.h"
 
-DP_NAMESPACE_BEGIN
+namespace DP
+{
 
 struct AABB
 {
@@ -25,7 +26,14 @@ struct AABBShape
 	//max = location + halfExtents
 };
 
+struct BoxShape
+{
+	fm::vec3 halfExtents;
+	fm::quat rotation;
+};
+
 bool Collides(fm::vec3 locationA, SphereShape sphereA, fm::vec3 locationB, SphereShape sphereB);
 bool Collides(fm::vec3 locationA, AABBShape boxA, fm::vec3 locationB, AABBShape boxB);
+bool Collides(fm::vec3 locationA, BoxShape boxA, fm::vec3 locationB, BoxShape boxB);
 
-DP_NAMESPACE_END
+}

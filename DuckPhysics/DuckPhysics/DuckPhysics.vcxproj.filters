@@ -38,7 +38,7 @@
     <ClInclude Include="include\DuckPhysics\CollisionShapes\CollisionShape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\DuckPhysics\CollisionShapes\CubeShape.h">
+    <ClInclude Include="include\DuckPhysics\CollisionShapes\BoxShape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\DuckPhysics\CollisionShapes\SphereShape.h">

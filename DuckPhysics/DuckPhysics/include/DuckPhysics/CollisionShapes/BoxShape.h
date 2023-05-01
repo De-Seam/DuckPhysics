@@ -4,9 +4,9 @@
 
 DP_NAMESPACE_BEGIN
 
-class CollisionCubeShape : public CollisionShape
+class CollisionBoxShape : public CollisionShape
 {
-	
+	BoxShape box;
 };
 
 DP_NAMESPACE_END

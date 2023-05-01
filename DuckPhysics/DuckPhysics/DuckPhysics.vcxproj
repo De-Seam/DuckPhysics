@@ -243,7 +243,7 @@
     <ClInclude Include="include\DuckPhysics\PhysicsObject.h" />
     <ClInclude Include="include\DuckPhysics\PhysicsWorld.h" />
     <ClInclude Include="include\DuckPhysics\CollisionShapes\CollisionShape.h" />
-    <ClInclude Include="include\DuckPhysics\CollisionShapes\CubeShape.h" />
+    <ClInclude Include="include\DuckPhysics\CollisionShapes\BoxShape.h" />
     <ClInclude Include="include\DuckPhysics\CollisionShapes\SphereShape.h" />
     <ClInclude Include="include\DuckPhysics\Shapes\Shapes.h" />
   </ItemGroup>
