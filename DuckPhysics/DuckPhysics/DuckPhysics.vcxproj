@@ -239,6 +239,7 @@
     <ClCompile Include="src\Shapes\Shapes.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\DuckPhysics\Collision\CollisionManager.h" />
     <ClInclude Include="include\DuckPhysics\Core.h" />
     <ClInclude Include="include\DuckPhysics\PhysicsObject.h" />
     <ClInclude Include="include\DuckPhysics\PhysicsWorld.h" />

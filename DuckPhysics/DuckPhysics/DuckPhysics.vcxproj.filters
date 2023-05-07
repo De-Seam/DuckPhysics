@@ -47,5 +47,8 @@
     <ClInclude Include="include\DuckPhysics\Shapes\Shapes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\DuckPhysics\Collision\CollisionManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
