@@ -12,8 +12,8 @@ private: //Deleted operators
 	CollisionShape& operator=(const CollisionShape&);
 
 public:
-
-
+	virtual ~CollisionShape() = default;
+	CollisionShape() = default;
 
 protected:
 	SphereShape boundingSphere;

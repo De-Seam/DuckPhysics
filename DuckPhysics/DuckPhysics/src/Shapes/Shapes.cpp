@@ -29,7 +29,92 @@ bool Collides(fm::vec3 locationA, AABBShape boxA, fm::vec3 locationB, AABBShape 
 	return aabbA.Collides(aabbB);
 }
 
-bool Collides(fm::vec3 locationA, BoxShape boxA, fm::vec3 locationB, BoxShape boxB)
+fm::vec3 FindReferenceFaceNormal(BoxShape* referenceBox, const fm::vec3& minPenetrationAxis) 
+{
+	// Transform the minimum penetration axis into the local coordinate frame of the reference box
+	fm::quat invRefRotation = fm::quat(-referenceBox->rotation.x, -referenceBox->rotation.y, -referenceBox->rotation.z, referenceBox->rotation.w);
+	fm::vec3 localMinPenetrationAxis = invRefRotation.rotate(minPenetrationAxis);
+
+	// Find the index of the face with the normal most closely aligned with the local minimum penetration axis
+	int maxIndex = 0;
+	float maxDotProduct = -1.0f;
+	for (int i = 0; i < 3; ++i) {
+		float dotProduct = std::abs(localMinPenetrationAxis[i]);
+		if (dotProduct > maxDotProduct) {
+			maxDotProduct = dotProduct;
+			maxIndex = i;
+		}
+	}
+
+	// Create the local normal of the reference face
+	fm::vec3 localFaceNormal(0, 0, 0);
+	localFaceNormal[maxIndex] = (localMinPenetrationAxis[maxIndex] > 0) ? 1.0f : -1.0f;
+
+	// Transform the local face normal back into the world coordinate frame
+	fm::vec3 worldFaceNormal = referenceBox->rotation.rotate(localFaceNormal);
+	return worldFaceNormal;
+}
+
+std::vector<fm::vec3> GetIncidentBoxVertices(fm::vec3 location, BoxShape* incidentBox) 
+{
+	std::vector<fm::vec3> incidentVertices(8);
+
+	// The local vertices of the box, assuming the box's center is at the origin.
+	fm::vec3 localVertices[] = {
+		fm::vec3(-incidentBox->halfExtents.x, -incidentBox->halfExtents.y, -incidentBox->halfExtents.z),
+		fm::vec3(-incidentBox->halfExtents.x, -incidentBox->halfExtents.y,  incidentBox->halfExtents.z),
+		fm::vec3(-incidentBox->halfExtents.x,  incidentBox->halfExtents.y, -incidentBox->halfExtents.z),
+		fm::vec3(-incidentBox->halfExtents.x,  incidentBox->halfExtents.y,  incidentBox->halfExtents.z),
+		fm::vec3( incidentBox->halfExtents.x, -incidentBox->halfExtents.y, -incidentBox->halfExtents.z),
+		fm::vec3( incidentBox->halfExtents.x, -incidentBox->halfExtents.y,  incidentBox->halfExtents.z),
+		fm::vec3( incidentBox->halfExtents.x,  incidentBox->halfExtents.y, -incidentBox->halfExtents.z),
+		fm::vec3( incidentBox->halfExtents.x,  incidentBox->halfExtents.y,  incidentBox->halfExtents.z)
+	};
+
+	// Transform the local vertices into world coordinates.
+	for (int i = 0; i < 8; ++i) {
+		incidentVertices[i] = location + incidentBox->rotation.rotate(localVertices[i]);
+	}
+
+	return incidentVertices;
+}
+
+std::vector<fm::vec3> TransformVertices(const std::vector<fm::vec3>& incidentVertices, const fm::quat& referenceRotation) 
+{
+	std::vector<fm::vec3> transformedVertices(incidentVertices.size());
+
+	// Calculate the inverse of the reference box's rotation quaternion.
+	fm::quat invRefRotation = fm::quat(-referenceRotation.x, -referenceRotation.y, -referenceRotation.z, referenceRotation.w);
+
+	// Transform the incident vertices into the reference box's coordinate frame.
+	for (size_t i = 0; i < incidentVertices.size(); ++i) {
+		transformedVertices[i] = invRefRotation.rotate(incidentVertices[i]);
+	}
+
+	return transformedVertices;
+}
+
+std::vector<fm::vec3> ClipVerticesAgainstReferenceFace(const std::vector<fm::vec3>& transformedIncidentVertices, const fm::vec3& referenceFaceNormal, BoxShape* referenceBox) 
+{
+	std::vector<fm::vec3> clippedVertices;
+
+	// Calculate the reference face's plane constant.
+	float planeConstant = referenceFaceNormal.dot(referenceBox->halfExtents);
+
+	// Iterate over the incident vertices and clip them against the reference face.
+	for (const fm::vec3& vertex : transformedIncidentVertices) {
+		float signedDistance = referenceFaceNormal.dot(vertex) - planeConstant;
+
+		// Add the vertex to the clipped vertices if it lies on or inside the reference face.
+		if (signedDistance <= 0) {
+			clippedVertices.push_back(vertex);
+		}
+	}
+
+	return clippedVertices;
+}
+
+CollisionResult Collides(fm::vec3 locationA, BoxShape boxA, fm::vec3 locationB, BoxShape boxB)
 {
 	// Compute the rotation matrix expressing box B in box A's coordinate frame.
 	fm::quat qA_inv = fm::quat(-boxA.rotation.x, -boxA.rotation.y, -boxA.rotation.z, boxA.rotation.w);
@@ -61,6 +146,9 @@ bool Collides(fm::vec3 locationA, BoxShape boxA, fm::vec3 locationB, BoxShape bo
 				   _mm_set1_ps(1e-6f))
 	};
 
+	float minPenetrationDepth = std::numeric_limits<float>::max();
+	fm::vec3 minPenetrationAxis;
+
 	// Check for axis separation.
 	for (int i = 0; i < 3; ++i) 
 	{
@@ -82,8 +170,14 @@ bool Collides(fm::vec3 locationA, BoxShape boxA, fm::vec3 locationB, BoxShape bo
 		__m128 axis_half_extents_B = _mm_dp_ps(half_extents_B, abs_columns[i], 0x71);
 		__m128 combined_half_extents = _mm_add_ps(axis_half_extents_A, axis_half_extents_B);
 		float separation = std::abs(t[i]);
+		if (separation < minPenetrationDepth) 
+		{
+			minPenetrationDepth = separation;
+			minPenetrationAxis = i;
+		}
+
 		if (separation > _mm_cvtss_f32(combined_half_extents)) 
-			return false;
+			return {};
 	}
 
 	// Check for cross product axes.
@@ -98,11 +192,23 @@ bool Collides(fm::vec3 locationA, BoxShape boxA, fm::vec3 locationB, BoxShape bo
 
 			float separation = std::abs(t[(i + 1) % 3] * columns[j][(i + 2) % 3] - t[(i + 2) % 3] * columns[j][(i + 1) % 3]);
 			if (separation > _mm_cvtss_f32(combined_half_extents)) 
-				return false;
+				return {};
 		}
 	}
 
-	return true;
+	BoxShape* referenceBox = &boxA;//(fm::dot(minPenetrationAxis, boxA.rotation) > fm::dot(minPenetrationAxis, boxB.rotation)) ? &boxA : &boxB;
+	BoxShape* incidentBox = &boxB;//(referenceBox == &boxA) ? &boxB : &boxA;
+	fm::vec3 referenceFaceNormal = FindReferenceFaceNormal(referenceBox, minPenetrationAxis);
+	std::vector<fm::vec3> incidentVertices = GetIncidentBoxVertices(locationB, incidentBox);
+	std::vector<fm::vec3> transformedIncidentVertices = TransformVertices(incidentVertices, referenceBox->rotation);
+	std::vector<fm::vec3> contactPoints = ClipVerticesAgainstReferenceFace(transformedIncidentVertices, referenceFaceNormal, referenceBox);
+
+	CollisionResult result;
+	result.collides = true;
+	result.normal = referenceFaceNormal;
+	result.contactPoints = contactPoints;
+
+	return result;
 }
 
 }

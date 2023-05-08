@@ -12,3 +12,8 @@ void ExampleParent::Destroy()
 void ExampleParent::Update(float DeltaTime)
 {
 }
+
+void ExampleParent::Draw()
+{
+
+}

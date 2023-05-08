@@ -16,14 +16,19 @@ public:
 	struct ConstructData
 	{
 		CollisionShape* shape;
+		fm::vec3 location;
 	};
 
 	PhysicsObject(const ConstructData& constructData);
 
-
+	const fm::vec3& GetLocation() { return location; }
+	void SetLocation(const fm::vec3& newLocation) { location = newLocation; }
+	CollisionShape* GetShape() { return m_shape.get(); }
 
 private:
 	std::unique_ptr<CollisionShape> m_shape = nullptr;
+
+	fm::vec3 location;
 };
 
 DP_NAMESPACE_END

@@ -6,6 +6,7 @@ DP_NAMESPACE_BEGIN
 
 class CollisionBoxShape : public CollisionShape
 {
+public:
 	BoxShape box;
 };
 

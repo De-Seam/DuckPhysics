@@ -22,6 +22,9 @@ public:
 
 	void Update(float DeltaTime);
 
+	const std::vector<PhysicsObject*>& GetPhysicsObjects() { return m_physicsObjects; }
+	const std::vector<CollisionShape*>& GetShapes() { return m_shapes; }
+
 private:
 	std::vector<PhysicsObject*> m_physicsObjects;
 	std::vector<CollisionShape*> m_shapes;
@@ -41,7 +44,7 @@ template<typename TPhysicsObject, typename ...TArgs>
 inline TPhysicsObject* PhysicsWorld::CreatePhysicsObject(TArgs && ...args)
 {
 	//TODO: Custom allocator
-	TPhysicsObject object = new TPhysicsObject(args);
+	TPhysicsObject* object = new TPhysicsObject(std::forward<TArgs>(args)...);
 	m_physicsObjects.emplace_back(object);
 
 	//TODO: Acceleration structure
