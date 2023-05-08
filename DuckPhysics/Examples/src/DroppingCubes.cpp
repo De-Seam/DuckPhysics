@@ -11,7 +11,7 @@ void ExampleDroppingCubes::Initialize()
 
 	DP::CollisionBoxShape* boxShape = m_physicsWorld.CreateShape<DP::CollisionBoxShape>();
 	boxShape->box.halfExtents = {2.f, 2.f, 2.f};
-	boxShape->box.rotation = {fm::vec3(0.3f, 0.f, 0.f)};
+	boxShape->box.rotation = {fm::vec3(0.5f, 0.f, 0.f)};
 	DP::PhysicsObject::ConstructData constructData;
 	constructData.shape = boxShape;
 	constructData.location = {1.f, 0.f, 0.f};
@@ -38,7 +38,7 @@ void ExampleDroppingCubes::Draw()
 
 	// Set up the camera matrices
 	static glm::mat4 projection = glm::perspective(fm::to_radians(70.f), static_cast<float>(SCREENWIDTH) / static_cast<float>(SCREENHEIGHT), 0.1f, 1000.0f);
-	static glm::mat4 view = glm::lookAt(glm::vec3(0.0f, -5.f, 0.f),
+	static glm::mat4 view = glm::lookAt(glm::vec3(0.0f, -20.f, 0.f),
 								  glm::vec3(0.0f, 0.0f, 0.0f),
 								  glm::vec3(0.0f, 0.f, 1.0f));
 
