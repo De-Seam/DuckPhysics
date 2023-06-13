@@ -1,6 +1,7 @@
 #pragma once
 #include "DuckPhysics/Core.h"
 #include "CollisionShapes/CollisionShape.h"
+#include "Collision/CollisionResult.h"
 
 #include <memory>
 
@@ -20,6 +21,8 @@ public:
 	};
 
 	PhysicsObject(const ConstructData& constructData);
+
+	CollisionResult Collides(PhysicsObject* other);
 
 	const fm::vec3& GetLocation() { return location; }
 	void SetLocation(const fm::vec3& newLocation) { location = newLocation; }

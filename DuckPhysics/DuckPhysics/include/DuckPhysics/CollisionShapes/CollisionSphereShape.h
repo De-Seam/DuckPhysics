@@ -7,6 +7,10 @@ DP_NAMESPACE_BEGIN
 class CollisionSphereShape : public CollisionShape
 {
 public:
+	CollisionSphereShape()
+	{
+		shapeType = ShapeType::CollisionSphereShape;
+	}
 
 protected:
 	SphereShape sphere;

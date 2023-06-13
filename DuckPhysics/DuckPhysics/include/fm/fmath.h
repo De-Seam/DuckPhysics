@@ -39,7 +39,7 @@ namespace fm //Fast Math
 	}
 
 	template<typename T>
-	void swap(T& a, T&b)
+	void swap(T& a, T& b)
 	{
 		T temp = a;
 		a = b;
@@ -78,7 +78,9 @@ namespace fm //Fast Math
 		const vec2& operator /= (const vec2& i) { return *this = *this / i; }
 		const vec2& operator /= (const float i) { return *this = *this / i; }
 	};
-	
+
+	struct mat3;
+
 	struct vec3
 	{
 		float x, y, z;
@@ -92,17 +94,23 @@ namespace fm //Fast Math
 		vec3(const vec3& i)
 			: vec3(i.x, i.y, i.z) {}
 
-		vec3(const __m128 &v) 
+		vec3(const __m128& v)
 		{
 			_mm_storeu_ps(&x, v);
 		}
 
-		__m128 as_sse() const 
+		__m128 as_sse() const
 		{
 			return _mm_set_ps(0.0f, z, y, x);
 		}
 
 		float& operator[](size_t i)
+		{
+			assert(i < 3);
+			return *(&x + i);
+		}
+
+		const float& operator[](size_t i) const
 		{
 			assert(i < 3);
 			return *(&x + i);
@@ -122,7 +130,9 @@ namespace fm //Fast Math
 		const vec3& operator /= (const vec3& i) { return *this = *this / i; }
 		const vec3& operator /= (const float i) { return *this = *this / i; }
 
-		bool operator==(const vec3& i) { return x == i.x && y == i.y && z == i.z;}
+		vec3 operator*(const mat3& m) const;
+
+		bool operator==(const vec3& i) { return x == i.x && y == i.y && z == i.z; }
 
 		[[nodiscard]] uint32_t get_argb() const
 		{
@@ -148,8 +158,8 @@ namespace fm //Fast Math
 		[[nodiscard]] vec3 cross(const vec3& i) const
 		{
 			return vec3(
-				y * i.z - z * i.y, 
-				z * i.x - x * i.z, 
+				y * i.z - z * i.y,
+				z * i.x - x * i.z,
 				x * i.y - y * i.x);
 		}
 	};
@@ -169,12 +179,12 @@ namespace fm //Fast Math
 		vec4(const vec3& i)
 			: vec4(i.x, i.y, i.z, 0.f) {}
 
-		vec4(const __m128 &v) 
+		vec4(const __m128& v)
 		{
 			_mm_storeu_ps(&x, v);
 		}
 
-		__m128 as_sse() const 
+		__m128 as_sse() const
 		{
 			return _mm_set_ps(w, z, y, x);
 		}
@@ -255,6 +265,22 @@ namespace fm //Fast Math
 			return *(&x + i);
 		}
 
+		const vec3& operator[](size_t i) const
+		{
+			assert(i < 3);
+			return *(&x + i);
+		}
+
+		mat3 operator*(const mat3& i) const
+		{
+			return
+			{
+				{const_cast<fm::vec3&>(x)[0] * const_cast<fm::vec3&>(i.x)[0] + const_cast<fm::vec3&>(x)[1] * const_cast<fm::vec3&>(i.y)[0] + const_cast<fm::vec3&>(x)[2] * i.z[0]},
+				{const_cast<fm::vec3&>(y)[0] * const_cast<fm::vec3&>(i.x)[1] + const_cast<fm::vec3&>(y)[1] * const_cast<fm::vec3&>(i.y)[1] + const_cast<fm::vec3&>(y)[2] * i.z[1]},
+				{const_cast<fm::vec3&>(z)[0] * const_cast<fm::vec3&>(i.x)[2] + const_cast<fm::vec3&>(z)[1] * const_cast<fm::vec3&>(i.y)[2] + const_cast<fm::vec3&>(z)[2] * i.z[2]}
+			};
+		}
+
 		mat3 operator*(mat3& i)
 		{
 			return
@@ -263,6 +289,26 @@ namespace fm //Fast Math
 				{y[0] * i.x[1] + y[1] * i.y[1] + y[2] * i.z[1]},
 				{z[0] * i.x[2] + z[1] * i.y[2] + z[2] * i.z[2]}
 			};
+		}
+
+		mat3 operator*(const vec3& i) const
+		{
+			return
+			{
+				{x[0] * i.x, x[1] * i.y, x[2] * i.z},
+				{y[0] * i.x, y[1] * i.y, y[2] * i.z},
+				{z[0] * i.x, z[1] * i.y, z[2] * i.z}
+			};
+		}
+
+		mat3 transpose()
+		{
+			mat3 result;
+			for (int i = 0; i < 3; ++i)
+				for (int j = 0; j < 3; ++j)
+					result[j][i] = (*this)[i][j];
+
+			return result;
 		}
 	};
 
@@ -273,10 +319,10 @@ namespace fm //Fast Math
 		mat4() {}
 
 		mat4(float i) :
-		x(i, 0, 0, 0),
-		y(0, i, 0, 0),
-		z(0,0,i,0),
-		w(0,0,0,i){}
+			x(i, 0, 0, 0),
+			y(0, i, 0, 0),
+			z(0, 0, i, 0),
+			w(0, 0, 0, i) {}
 
 		mat4(vec4 x, vec4 y, vec4 z, vec4 w)
 			: x(x), y(y), z(z), w(w) {}
@@ -337,13 +383,23 @@ namespace fm //Fast Math
 		}
 	};
 
+	inline vec3 vec3::operator*(const mat3& m) const
+	{
+		return
+			vec3{
+				m[0][0] * x + m[1][0] * y + m[2][0] * z,
+				m[0][1] * x + m[1][1] * y + m[2][1] * z,
+				m[0][2] * x + m[1][2] * y + m[2][2] * z
+		};
+	}
+
 	struct quat
 	{
 		float x, y, z, w;
 
 		quat() = default;
 		quat(float x, float y, float z, float w)
-			: x(x), y(y), z(z), w(w){}
+			: x(x), y(y), z(z), w(w) {}
 		quat(float a_x, float a_y, float a_z)
 		{
 			float cy = std::cosf(a_z * 0.5f);
@@ -359,12 +415,12 @@ namespace fm //Fast Math
 			z = cr * cp * sy - sr * sp * cy;
 		}
 
-		quat(const __m128 &v) 
+		quat(const __m128& v)
 		{
 			_mm_storeu_ps(&x, v);
 		}
 
-		__m128 as_sse() const 
+		__m128 as_sse() const
 		{
 			return _mm_set_ps(w, z, y, x);
 		}
@@ -376,7 +432,8 @@ namespace fm //Fast Math
 		quat operator + (const quat& i) const { return { x + i.x, y + i.y, z + i.z, w + i.w }; }
 		quat operator - (const quat& i) const { return { x - i.x, y - i.y, z - i.z, w - i.w }; }
 		quat operator * (const float i) const { return { x * i, y * i, z * i, w * i }; }
-		quat operator * (const quat& i) const { return
+		quat operator * (const quat& i) const {
+			return
 			{
 				w * i.x + x * i.w + y * i.z - z * i.y,
 				w * i.y - x * i.z + y * i.w + z * i.x,
@@ -389,13 +446,17 @@ namespace fm //Fast Math
 		const quat& operator *= (const quat& i) { return *this = *this * i; }
 		const quat& operator *= (const float i) { return *this = *this * i; }
 
-		vec3 rotate(const vec3 &v) const 
+		vec3 rotate(const vec3& v) const
 		{
 			quat p(v.x, v.y, v.z, 0);
 			quat q_inv(-x, -y, -z, w);
 			quat result = (*this) * p * q_inv;
 
 			return vec3(result.x, result.y, result.z);
+		}
+
+		quat conjugate() const {
+			return fm::quat(-x, -y, -z, w);
 		}
 
 		vec3 get_euler() const
@@ -542,28 +603,28 @@ namespace fm //Fast Math
 		return result;
 	}
 
-	inline mat4 look_at(const vec3& eye, const vec3& target, const vec3& up) 
+	inline mat4 look_at(const vec3& eye, const vec3& target, const vec3& up)
 	{
 		vec3 zaxis = normalize(eye - target);
 		vec3 xaxis = normalize(up.cross(zaxis));
 		vec3 yaxis = zaxis.cross(xaxis);
-	
+
 		mat4 view;
 		view[0][0] = xaxis.x;
 		view[1][0] = xaxis.y;
 		view[2][0] = xaxis.z;
 		view[3][0] = -xaxis.dot(eye);
-	
+
 		view[0][1] = yaxis.x;
 		view[1][1] = yaxis.y;
 		view[2][1] = yaxis.z;
 		view[3][1] = -yaxis.dot(eye);
-	
+
 		view[0][2] = zaxis.x;
 		view[1][2] = zaxis.y;
 		view[2][2] = zaxis.z;
 		view[3][2] = -zaxis.dot(eye);
-	
+
 		return view;
 	}
 

@@ -234,18 +234,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\CollisionShapes\CollisionBoxShape.cpp" />
+    <ClCompile Include="src\CollisionShapes\CollisionShape.cpp" />
     <ClCompile Include="src\PhysicsObject.cpp" />
     <ClCompile Include="src\PhysicsWorld.cpp" />
     <ClCompile Include="src\Shapes\Shapes.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\DuckPhysics\Collision\CollisionManager.h" />
+    <ClInclude Include="include\DuckPhysics\Collision\CollisionResult.h" />
     <ClInclude Include="include\DuckPhysics\Core.h" />
     <ClInclude Include="include\DuckPhysics\PhysicsObject.h" />
     <ClInclude Include="include\DuckPhysics\PhysicsWorld.h" />
     <ClInclude Include="include\DuckPhysics\CollisionShapes\CollisionShape.h" />
-    <ClInclude Include="include\DuckPhysics\CollisionShapes\BoxShape.h" />
-    <ClInclude Include="include\DuckPhysics\CollisionShapes\SphereShape.h" />
+    <ClInclude Include="include\DuckPhysics\CollisionShapes\CollisionBoxShape.h" />
+    <ClInclude Include="include\DuckPhysics\CollisionShapes\CollisionSphereShape.h" />
     <ClInclude Include="include\DuckPhysics\Shapes\Shapes.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
